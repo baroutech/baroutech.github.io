@@ -1,68 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Connexion - Barou Tech</title>
-
+<title>Barou Tech - Connexion</title>
 <style>
-body{
-font-family: Arial;
-background:#111827;
-color:white;
-text-align:center;
-margin-top:50px;
-}
-
-h1{
-color:#22c55e;
-}
-
-input{
-padding:10px;
-margin:10px;
-width:220px;
-border-radius:6px;
-border:none;
-}
-
-button{
-padding:12px 25px;
-font-size:16px;
-background:#22c55e;
-border:none;
-border-radius:8px;
-color:white;
-cursor:pointer;
-}
+body{font-family: Arial; background:#111827; color:white; text-align:center; margin-top:50px;}
+h1{color:#22c55e;}
+input{padding:10px; margin:10px; width:220px; border-radius:6px; border:none;}
+button{padding:12px 25px; font-size:16px; background:#22c55e; border:none; border-radius:8px; color:white; cursor:pointer;}
 </style>
-
 </head>
-
 <body>
 
 <h1>Se connecter</h1>
 
-<input type="email" placeholder="Email" id="email"><br>
-
-<input type="password" placeholder="Mot de passe" id="password"><br>
-
-<button onclick="login()">Se connecter</button>
+<form onsubmit="return false;">
+  <input type="email" id="email" placeholder="Email" required><br>
+  <input type="password" id="password" placeholder="Mot de passe" required><br>
+  <button onclick="login()">Se connecter</button>
+</form>
 
 <script>
-
 function login(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-let email = document.getElementById("email").value
-let password = document.getElementById("password").value
+  let data = JSON.parse(localStorage.getItem("baroutech") || '{"utilisateurs":{}}');
 
-if(email === "" || password === ""){
-alert("Remplis tous les champs !")
-return
+  if(!data.utilisateurs[email]){
+    alert("Utilisateur non trouvé !");
+    return;
+  }
+
+  data.connecte = email; // sauvegarde l’utilisateur connecté
+  localStorage.setItem("baroutech", JSON.stringify(data));
+  window.location.href = "dashboard.html";
 }
-
-window.location.href = "dashboard.html"
-
-}
-
 </script>
 
 </body>
