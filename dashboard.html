@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard - Barou Tech</title>
+
+<style>
+body{
+font-family: Arial;
+background:#111827;
+color:white;
+text-align:center;
+margin-top:40px;
+}
+
+h1{
+color:#22c55e;
+}
+
+textarea{
+width:250px;
+height:80px;
+border-radius:8px;
+border:none;
+padding:10px;
+}
+
+button{
+margin-top:10px;
+padding:12px 25px;
+font-size:16px;
+background:#22c55e;
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+}
+
+.post{
+background:#1f2937;
+padding:15px;
+margin:15px;
+border-radius:10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Barou Tech Dashboard 🚀</h1>
+
+<p>Publie quelque chose :</p>
+
+<textarea id="postInput" placeholder="Ecris ton message..."></textarea>
+
+<br>
+
+<button onclick="addPost()">Publier</button>
+
+<h2>Publications</h2>
+
+<div id="posts"></div>
+
+<script>
+
+function addPost(){
+
+let input = document.getElementById("postInput")
+
+let text = input.value
+
+if(text === "") return
+
+let post = document.createElement("div")
+
+post.className = "post"
+
+post.innerText = text
+
+document.getElementById("posts").prepend(post)
+
+input.value = ""
+
+}
+
+</script>
+
+</body>
+</html>
