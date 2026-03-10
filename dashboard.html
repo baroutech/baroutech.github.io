@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard - Barou Tech</title>
+<title>Barou Tech - Dashboard</title>
 
 <style>
 body{
@@ -9,7 +9,7 @@ font-family: Arial;
 background:#111827;
 color:white;
 text-align:center;
-margin-top:40px;
+margin-top:50px;
 }
 
 h1{
@@ -17,11 +17,11 @@ color:#22c55e;
 }
 
 textarea{
-width:250px;
+width:300px;
 height:80px;
-border-radius:8px;
-border:none;
 padding:10px;
+border-radius:6px;
+border:none;
 }
 
 button{
@@ -35,51 +35,39 @@ color:white;
 cursor:pointer;
 }
 
-.post{
-background:#1f2937;
-padding:15px;
-margin:15px;
-border-radius:10px;
+#posts{
+margin-top:30px;
 }
 </style>
-
 </head>
 
 <body>
 
 <h1>Barou Tech Dashboard 🚀</h1>
 
-<p>Publie quelque chose :</p>
+<textarea id="postInput" placeholder="Écris quelque chose..."></textarea><br>
 
-<textarea id="postInput" placeholder="Ecris ton message..."></textarea>
-
-<br>
-
-<button onclick="addPost()">Publier</button>
-
-<h2>Publications</h2>
+<button onclick="publishPost()">Publier</button>
 
 <div id="posts"></div>
 
 <script>
 
-function addPost(){
+function publishPost(){
 
-let input = document.getElementById("postInput")
+let text = document.getElementById("postInput").value
 
-let text = input.value
+if(text === ""){
+alert("Écris un message !");
+return
+}
 
-if(text === "") return
-
-let post = document.createElement("div")
-
-post.className = "post"
-
+let post = document.createElement("p")
 post.innerText = text
 
-document.getElementById("posts").prepend(post)
+document.getElementById("posts").appendChild(post)
 
-input.value = ""
+document.getElementById("postInput").value = ""
 
 }
 
