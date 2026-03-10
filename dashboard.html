@@ -3,53 +3,14 @@
 <head>
 <title>Barou Tech - Dashboard</title>
 <style>
-body{
-font-family: Arial;
-background:#111827;
-color:white;
-text-align:center;
-margin-top:50px;
-}
-
-h1{
-color:#22c55e;
-}
-
-textarea{
-width:300px;
-height:80px;
-padding:10px;
-border-radius:6px;
-border:none;
-}
-
-button{
-margin-top:10px;
-padding:12px 25px;
-font-size:16px;
-background:#22c55e;
-border:none;
-border-radius:8px;
-color:white;
-cursor:pointer;
-}
-
-#posts{
-margin-top:30px;
-text-align:left;
-max-width:500px;
-margin-left:auto;
-margin-right:auto;
-}
-.post{
-background:#1f2937;
-padding:10px;
-margin-bottom:10px;
-border-radius:6px;
-}
+body{font-family: Arial; background:#111827; color:white; text-align:center; margin-top:50px;}
+h1{color:#22c55e;}
+textarea{width:300px; height:80px; padding:10px; border-radius:6px; border:none;}
+button{margin-top:10px; padding:12px 25px; font-size:16px; background:#22c55e; border:none; border-radius:8px; color:white; cursor:pointer;}
+#posts{margin-top:30px; text-align:left; max-width:500px; margin-left:auto; margin-right:auto;}
+.post{background:#1f2937; padding:10px; margin-bottom:10px; border-radius:6px;}
 </style>
 </head>
-
 <body>
 
 <h1>Barou Tech Dashboard 🚀</h1>
@@ -60,34 +21,39 @@ border-radius:6px;
 <div id="posts"></div>
 
 <script>
-// Récupérer les messages depuis localStorage
-let posts = JSON.parse(localStorage.getItem("posts") || "[]");
-
-// Fonction pour afficher les messages
-function displayPosts(){
-    const postsDiv = document.getElementById("posts");
-    postsDiv.innerHTML = "";
-    posts.forEach(msg => {
-        const post = document.createElement("div");
-        post.className = "post";
-        post.innerText = msg;
-        postsDiv.appendChild(post);
-    });
+// Charger les données
+let data = JSON.parse(localStorage.getItem("baroutech") || '{"utilisateurs":{}, "connecte":""}');
+let currentUser = data.connecte || "";
+if(!currentUser){
+  alert("Tu dois te connecter !");
+  window.location.href = "login.html";
 }
 
-// Publier un message
-function publishPost(){
-    const input = document.getElementById("postInput");
-    const text = input.value.trim();
-    if(text === ""){
-        alert("Écris un message !");
-        return;
-    }
+let posts = data.utilisateurs[currentUser] || [];
 
-    posts.push(text);
-    localStorage.setItem("posts", JSON.stringify(posts));
-    input.value = "";
-    displayPosts();
+function displayPosts(){
+  const postsDiv = document.getElementById("posts");
+  postsDiv.innerHTML = "";
+  posts.forEach(msg => {
+    const post = document.createElement("div");
+    post.className = "post";
+    post.innerText = msg;
+    postsDiv.appendChild(post);
+  });
+}
+
+function publishPost(){
+  const input = document.getElementById("postInput");
+  const text = input.value.trim();
+  if(text === ""){
+    alert("Écris un message !");
+    return;
+  }
+  posts.push(text);
+  data.utilisateurs[currentUser] = posts;
+  localStorage.setItem("baroutech", JSON.stringify(data));
+  input.value = "";
+  displayPosts();
 }
 
 // Afficher les messages au chargement
