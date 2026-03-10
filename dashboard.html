@@ -2,7 +2,6 @@
 <html>
 <head>
 <title>Barou Tech - Dashboard</title>
-
 <style>
 body{
 font-family: Arial;
@@ -37,6 +36,16 @@ cursor:pointer;
 
 #posts{
 margin-top:30px;
+text-align:left;
+max-width:500px;
+margin-left:auto;
+margin-right:auto;
+}
+.post{
+background:#1f2937;
+padding:10px;
+margin-bottom:10px;
+border-radius:6px;
 }
 </style>
 </head>
@@ -46,31 +55,43 @@ margin-top:30px;
 <h1>Barou Tech Dashboard 🚀</h1>
 
 <textarea id="postInput" placeholder="Écris quelque chose..."></textarea><br>
-
 <button onclick="publishPost()">Publier</button>
 
 <div id="posts"></div>
 
 <script>
+// Récupérer les messages depuis localStorage
+let posts = JSON.parse(localStorage.getItem("posts") || "[]");
 
+// Fonction pour afficher les messages
+function displayPosts(){
+    const postsDiv = document.getElementById("posts");
+    postsDiv.innerHTML = "";
+    posts.forEach(msg => {
+        const post = document.createElement("div");
+        post.className = "post";
+        post.innerText = msg;
+        postsDiv.appendChild(post);
+    });
+}
+
+// Publier un message
 function publishPost(){
+    const input = document.getElementById("postInput");
+    const text = input.value.trim();
+    if(text === ""){
+        alert("Écris un message !");
+        return;
+    }
 
-let text = document.getElementById("postInput").value
-
-if(text === ""){
-alert("Écris un message !");
-return
+    posts.push(text);
+    localStorage.setItem("posts", JSON.stringify(posts));
+    input.value = "";
+    displayPosts();
 }
 
-let post = document.createElement("p")
-post.innerText = text
-
-document.getElementById("posts").appendChild(post)
-
-document.getElementById("postInput").value = ""
-
-}
-
+// Afficher les messages au chargement
+displayPosts();
 </script>
 
 </body>
