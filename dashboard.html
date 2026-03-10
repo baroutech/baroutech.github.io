@@ -3,17 +3,25 @@
 <head>
 <title>Barou Tech - Dashboard</title>
 <style>
-body{font-family: Arial; background:#111827; color:white; text-align:center; margin-top:50px;}
+body{font-family: Arial; background:#111827; color:white; text-align:center; margin-top:20px;}
 h1{color:#22c55e;}
 textarea{width:300px; height:80px; padding:10px; border-radius:6px; border:none;}
 button{margin-top:10px; padding:12px 25px; font-size:16px; background:#22c55e; border:none; border-radius:8px; color:white; cursor:pointer;}
 #posts{margin-top:30px; text-align:left; max-width:500px; margin-left:auto; margin-right:auto;}
 .post{background:#1f2937; padding:10px; margin-bottom:10px; border-radius:6px;}
+nav{margin-bottom:20px;}
+nav button{margin:5px;}
 </style>
 </head>
 <body>
 
 <h1>Barou Tech Dashboard 🚀</h1>
+
+<!-- Menu utilisateur -->
+<nav>
+  <button onclick="goToDashboard()">Dashboard</button>
+  <button onclick="logout()">Déconnexion</button>
+</nav>
 
 <textarea id="postInput" placeholder="Écris quelque chose..."></textarea><br>
 <button onclick="publishPost()">Publier</button>
@@ -24,6 +32,8 @@ button{margin-top:10px; padding:12px 25px; font-size:16px; background:#22c55e; b
 // Charger les données
 let data = JSON.parse(localStorage.getItem("baroutech") || '{"utilisateurs":{}, "connecte":""}');
 let currentUser = data.connecte || "";
+
+// Si aucun utilisateur connecté → retour à login
 if(!currentUser){
   alert("Tu dois te connecter !");
   window.location.href = "login.html";
@@ -31,6 +41,7 @@ if(!currentUser){
 
 let posts = data.utilisateurs[currentUser] || [];
 
+// Afficher les messages
 function displayPosts(){
   const postsDiv = document.getElementById("posts");
   postsDiv.innerHTML = "";
@@ -42,6 +53,7 @@ function displayPosts(){
   });
 }
 
+// Publier un message
 function publishPost(){
   const input = document.getElementById("postInput");
   const text = input.value.trim();
@@ -54,6 +66,20 @@ function publishPost(){
   localStorage.setItem("baroutech", JSON.stringify(data));
   input.value = "";
   displayPosts();
+}
+
+// Bouton Dashboard (rafraîchit juste la page)
+function goToDashboard(){
+  displayPosts();
+  document.getElementById("postInput").value = "";
+}
+
+// Bouton Déconnexion
+function logout(){
+  data.connecte = "";
+  localStorage.setItem("baroutech", JSON.stringify(data));
+  alert("Déconnecté !");
+  window.location.href = "login.html";
 }
 
 // Afficher les messages au chargement
