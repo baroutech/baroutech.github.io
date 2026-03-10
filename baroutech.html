@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Barou Tech - Tout-en-un</title>
+<style>
+body{font-family: Arial; background:#111827; color:white; margin:0; padding:0;}
+header{background:#1f2937; padding:10px; display:flex; align-items:center; justify-content:space-between;}
+header h1{color:#22c55e; margin:0;}
+header button{padding:8px 15px; border:none; border-radius:6px; background:#22c55e; color:white; cursor:pointer;}
+.container{max-width:600px; margin:20px auto; text-align:center;}
+input,textarea{width:100%; padding:10px; border-radius:6px; border:none; margin:5px 0;}
+button.publish{margin-top:10px; padding:10px 20px; background:#22c55e; border:none; border-radius:6px; color:white; cursor:pointer;}
+.post{background:#1f2937; padding:10px; margin-bottom:15px; border-radius:8px; text-align:left;}
+.post-header{display:flex; align-items:center; margin-bottom:10px;}
+.post-header img{width:40px; height:40px; border-radius:50%; margin-right:10px;}
+.post img{max-width:100%; margin-top:10px; border-radius:6px;}
+.post button{margin-right:10px; background:#22c55e; border:none; border-radius:6px; color:white; padding:5px 10px; cursor:pointer;}
+.likes{font-size:14px; margin-top:5px;}
+#signupForm, #loginForm, #dashboard{display:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Barou Tech</h1>
+  <button id="logoutBtn" onclick="logout()">Déconnexion</button>
+</header>
+
+<div class="container">
+
+  <!-- Création de compte -->
+  <div id="signupForm">
+    <h2>Créer un compte</h2>
+    <input type="text" id="signupName" placeholder="Nom" required><br>
+    <input type="email" id="signupEmail" placeholder="Email" required><br>
+    <input type="password" id="signupPassword" placeholder="Mot de passe" required><br>
+    <button onclick="signup()">Créer un compte</button><br>
+    <small>Déjà inscrit ? <a href="#" onclick="showLogin()">Se connecter</a></small>
+  </div>
+
+  <!-- Connexion -->
+  <div id="loginForm">
+    <h2>Se connecter</h2>
+    <input type="email" id="loginEmail" placeholder="Email" required><br>
+    <input type="password" id="loginPassword" placeholder="Mot de passe" required><br>
+    <button onclick="login()">Se connecter</button><br>
+    <small>Pas encore de compte ? <a href="#" onclick="showSignup()">Créer un compte</a></small>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard">
+    <textarea id="postInput" placeholder="Quoi de neuf ?"></textarea><br>
+    <input type="file" id="imageInput" accept="image/*"><br>
+    <button class="publish" onclick="publishPost()">Publier</button>
+    <div id="posts"></div>
+  </div>
+
+</div>
+
+<script>
+// Données
+let data = JSON.parse(localStorage.getItem("baroutech") || '{"utilisateurs":{}, "connecte":""}');
+let currentUser = data.connecte || "";
+
+// Afficher le formulaire approprié
+function showSignup(){ document.getElementById("signupForm").style.display="block"; document.getElementById("loginForm").style.display="none"; document.getElementById("dashboard").style.display="none"; }
+function showLogin(){ document.getElementById("signupForm").style.display="none"; document.getElementById("loginForm").style.display="block"; document.getElementById("dashboard").style.display="none"; }
+function showDashboard(){ document.getElementById("signupForm").style.display="none"; document.getElementById("loginForm").style.display="none"; document.getElementById("dashboard").style.display="block"; }
+
+if(currentUser && data.utilisateurs[currentUser]){ showDashboard(); } else { showSignup(); }
+
+// Création de compte
+function signup(){
+  const name = document.getElementById("signupName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value.trim();
+  if(!name || !email || !password){ alert("Remplis tous les champs !"); return; }
+  if(data.utilisateurs[email]){ alert("Email déjà utilisé !"); return; }
+
+  data.utilisateurs[email]={nom:name, avatar:"https://i.pravatar.cc/50?u="+email, password:password, posts:[]};
+  data.connecte=email;
+  localStorage.setItem("baroutech", JSON.stringify(data));
+  currentUser=email;
+  showDashboard();
+  displayPosts();
+}
+
+// Connexion
+function login(){
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+  if(!data.utilisateurs[email] || data.utilisateurs[email].password !== password){ alert("Email ou mot de passe incorrect !"); return; }
+  data.connecte=email;
+  localStorage.setItem("baroutech", JSON.stringify(data));
+  currentUser=email;
+  showDashboard();
+  displayPosts();
+}
+
+// Déconnexion
+function logout(){
+  data.connecte="";
+  localStorage.setItem("baroutech", JSON.stringify(data));
+  currentUser="";
+  showLogin();
+}
+
+// Afficher les posts
+function displayPosts(){
+  const postsDiv = document.getElementById("posts");
+  postsDiv.innerHTML="";
+  let allPosts=[];
+  for(let email in data.utilisateurs){
+    let user = data.utilisateurs[email];
+    user.posts.forEach((p, idx)=>{
+      allPosts.push({...p, nom:user.nom, avatar:user.avatar, email:email, index:idx});
+    });
+  }
+  allPosts.sort((a,b)=>b.time - a.time);
+  allPosts.forEach(p=>{
+    const postDiv=document.createElement("div"); postDiv.className="post";
+    const header=document.createElement("div"); header.className="post-header";
+    const avatar=document.createElement("img"); avatar.src=p.avatar; const name=document.createElement("span"); name.innerText=p.nom;
+    header.appendChild(avatar); header.appendChild(name); postDiv.appendChild(header);
+    const text=document.createElement("div"); text.innerText=p.text; postDiv.appendChild(text);
+    if(p.image){ const img=document.createElement("img"); img.src=p.image; postDiv.appendChild(img); }
+
+    // Like et Supprimer
+    const btnDiv=document.createElement("div");
+    if(!p.likes)p.likes=0;
+    const likeBtn=document.createElement("button"); likeBtn.innerText="👍 Like"; likeBtn.onclick=function(){ p.likes++; saveData(); displayPosts(); }; btnDiv.appendChild(likeBtn);
+    const likesSpan=document.createElement("span"); likesSpan.className="likes"; likesSpan.innerText=p.likes+" likes"; btnDiv.appendChild(likesSpan);
+    if(p.email===currentUser){ const delBtn=document.createElement("button"); delBtn.innerText="Supprimer"; delBtn.onclick=function(){ data.utilisateurs[currentUser].posts.splice(p.index,1); saveData(); displayPosts(); }; btnDiv.appendChild(delBtn); }
+    postDiv.appendChild(btnDiv);
+    postsDiv.appendChild(postDiv);
+  });
+}
+
+// Publier un post
+function publishPost(){
+  const text=document.getElementById("postInput").value.trim();
+  const imageFile=document.getElementById("imageInput").files[0];
+  if(text==="" && !imageFile){ alert("Écris un message ou choisis une image !"); return; }
+
+  function savePost(imgData=null){
+    let postObj={text:text, image:imgData, time:Date.now(), likes:0};
+    data.utilisateurs[currentUser].posts.push(postObj);
+    saveData();
+    document.getElementById("postInput").value="";
+    document.getElementById("imageInput").value="";
+    displayPosts();
+  }
+
+  if(imageFile){ const reader=new FileReader(); reader.onload=function(e){ savePost(e.target.result); }; reader.readAsDataURL(imageFile); } else { savePost(); }
+}
+
+function saveData(){ localStorage.setItem("baroutech", JSON.stringify(data)); }
+</script>
+
+</body>
+</html>
