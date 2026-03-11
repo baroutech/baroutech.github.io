@@ -2,102 +2,293 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mon Mini Réseau Social</title>
+<title>Mini Réseau Social</title>
+
 <style>
-  body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
-  h1 { text-align:center; color:#1877f2; }
-  #post-form { background:#fff; padding:15px; border-radius:8px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
-  textarea, input, button { width:100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc; }
-  button { background:#1877f2; color:#fff; border:none; cursor:pointer; }
-  button:hover { background:#145dbf; }
-  #feed { }
-  .post { background:#fff; padding:15px; border-radius:8px; margin-bottom:15px; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
-  .post img { max-width:100%; margin-top:10px; border-radius:5px; }
-  .profile { display:flex; align-items:center; margin-bottom:10px; }
-  .profile img { width:40px; height:40px; border-radius:50%; margin-right:10px; object-fit:cover; }
+
+body{
+font-family:Arial;
+background:#f0f2f5;
+padding:20px;
+}
+
+h1{
+text-align:center;
+color:#1877f2;
+}
+
+.box{
+background:white;
+padding:15px;
+border-radius:8px;
+margin-bottom:20px;
+box-shadow:0 2px 4px rgba(0,0,0,0.2);
+}
+
+textarea,input,button{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+button{
+background:#1877f2;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+.post{
+background:white;
+padding:15px;
+border-radius:8px;
+margin-bottom:15px;
+box-shadow:0 2px 4px rgba(0,0,0,0.2);
+}
+
+.post img{
+max-width:100%;
+margin-top:10px;
+border-radius:5px;
+}
+
+.profile{
+display:flex;
+align-items:center;
+margin-bottom:10px;
+}
+
+.profile img{
+width:40px;
+height:40px;
+border-radius:50%;
+margin-right:10px;
+object-fit:cover;
+}
+
+.comment{
+background:#f0f2f5;
+padding:8px;
+border-radius:5px;
+margin-top:5px;
+}
+
 </style>
+
 </head>
+
 <body>
 
 <h1>Mon Mini Réseau Social</h1>
 
-<div id="post-form">
-  <div class="profile">
-    <img id="profile-preview" src="https://i.pravatar.cc/40" alt="Profil">
-    <strong>Moi</strong>
-  </div>
+<div class="box">
 
-  <!-- Input pour modifier la photo de profil -->
-  <input type="file" id="profile-image"><br>
+<div class="profile">
 
-  <!-- Texte et image du post -->
-  <textarea id="post-text" placeholder="Quoi de neuf ?"></textarea>
-  <input type="file" id="post-image"><br>
-  <button id="submit-post">Publier</button>
+<img id="avatarPreview" src="https://i.pravatar.cc/40">
+
+<strong>Moi</strong>
+
 </div>
 
-<div id="feed">
-  <h2>Fil</h2>
+<input type="file" id="avatarInput">
+
+<textarea id="postText" placeholder="Quoi de neuf ?"></textarea>
+
+<input type="file" id="postImage">
+
+<button onclick="createPost()">Publier</button>
+
 </div>
+
+<div id="feed"></div>
 
 <script>
-const postText = document.getElementById("post-text");
-const postImage = document.getElementById("post-image");
-const submitPostBtn = document.getElementById("submit-post");
-const feed = document.getElementById("feed");
 
-const profileImageInput = document.getElementById("profile-image");
-const profilePreview = document.getElementById("profile-preview");
-let profileImageSrc = profilePreview.src; // avatar par défaut
+let posts = JSON.parse(localStorage.getItem("posts")) || [];
+let avatar = localStorage.getItem("avatar") || "https://i.pravatar.cc/40";
 
-// Modifier la photo de profil
-profileImageInput.addEventListener("change", () => {
-  const file = profileImageInput.files[0];
-  if(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      profileImageSrc = e.target.result;
-      profilePreview.src = profileImageSrc; // met à jour la photo affichée
-    }
-    reader.readAsDataURL(file);
-  }
+document.getElementById("avatarPreview").src = avatar;
+
+document.getElementById("avatarInput").addEventListener("change",function(){
+
+let file=this.files[0];
+
+let reader=new FileReader();
+
+reader.onload=function(e){
+
+avatar=e.target.result;
+
+localStorage.setItem("avatar",avatar);
+
+document.getElementById("avatarPreview").src=avatar;
+
+}
+
+reader.readAsDataURL(file);
+
 });
 
-// Publier un post
-submitPostBtn.addEventListener("click", () => {
-  const text = postText.value;
-  const file = postImage.files[0];
-  if(!text && !file) return alert("Écris un message ou choisis une image !");
+function savePosts(){
 
-  const div = document.createElement("div");
-  div.classList.add("post");
+localStorage.setItem("posts",JSON.stringify(posts));
 
-  // Avatar du post
-  div.innerHTML = `
-    <div class="profile">
-      <img src="${profileImageSrc}" alt="Profil">
-      <strong>Moi</strong>
-    </div>
-  `;
+}
 
-  if(text) div.innerHTML += `<p>${text}</p>`;
+function createPost(){
 
-  if(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      div.innerHTML += `<img src="${e.target.result}">`;
-      feed.prepend(div);
-    }
-    reader.readAsDataURL(file);
-  } else {
-    feed.prepend(div);
-  }
+let text=document.getElementById("postText").value;
 
-  // Réinitialiser le formulaire
-  postText.value = "";
-  postImage.value = "";
+let file=document.getElementById("postImage").files[0];
+
+if(!text && !file) return;
+
+let reader=new FileReader();
+
+if(file){
+
+reader.onload=function(e){
+
+addPost(text,e.target.result);
+
+}
+
+reader.readAsDataURL(file);
+
+}else{
+
+addPost(text,null);
+
+}
+
+document.getElementById("postText").value="";
+document.getElementById("postImage").value="";
+
+}
+
+function addPost(text,image){
+
+let post={
+
+id:Date.now(),
+
+text:text,
+
+image:image,
+
+likes:0,
+
+comments:[]
+
+};
+
+posts.unshift(post);
+
+savePosts();
+
+render();
+
+}
+
+function likePost(id){
+
+let post=posts.find(p=>p.id===id);
+
+post.likes++;
+
+savePosts();
+
+render();
+
+}
+
+function deletePost(id){
+
+posts=posts.filter(p=>p.id!==id);
+
+savePosts();
+
+render();
+
+}
+
+function addComment(id){
+
+let input=document.getElementById("commentInput"+id);
+
+let text=input.value;
+
+if(!text) return;
+
+let post=posts.find(p=>p.id===id);
+
+post.comments.push(text);
+
+input.value="";
+
+savePosts();
+
+render();
+
+}
+
+function render(){
+
+let feed=document.getElementById("feed");
+
+feed.innerHTML="";
+
+posts.forEach(post=>{
+
+let div=document.createElement("div");
+
+div.className="post";
+
+div.innerHTML=`
+
+<div class="profile">
+
+<img src="${avatar}">
+
+<strong>Moi</strong>
+
+</div>
+
+<p>${post.text || ""}</p>
+
+${post.image ? `<img src="${post.image}">` : ""}
+
+<button onclick="likePost(${post.id})">Like (${post.likes})</button>
+
+<button onclick="deletePost(${post.id})">Supprimer</button>
+
+<div>
+
+<input id="commentInput${post.id}" placeholder="Commenter">
+
+<button onclick="addComment(${post.id})">Envoyer</button>
+
+</div>
+
+<div>
+
+${post.comments.map(c=>`<div class="comment">${c}</div>`).join("")}
+
+</div>
+
+`;
+
+feed.appendChild(div);
+
 });
+
+}
+
+render();
+
 </script>
 
 </body>
