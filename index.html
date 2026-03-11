@@ -1,35 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-<title>Barou Tech</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Mini Réseau Social</title>
 <style>
-body{
-font-family: Arial;
-background:#111827;
-color:white;
-text-align:center;
-margin-top:100px;
-}
-h1{
-color:#22c55e;
-}
-button{
-padding:12px 25px;
-font-size:18px;
-background:#22c55e;
-border:none;
-border-radius:8px;
-color:white;
-}
+  body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+  h1 { text-align:center; color:#1877f2; }
+  #post-form { background:#fff; padding:15px; border-radius:8px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+  textarea, input, button { width:100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc; }
+  button { background:#1877f2; color:#fff; border:none; cursor:pointer; }
+  button:hover { background:#145dbf; }
+  #feed { }
+  .post { background:#fff; padding:15px; border-radius:8px; margin-bottom:15px; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+  .post img { max-width:100%; margin-top:10px; border-radius:5px; }
+  .profile { display:flex; align-items:center; margin-bottom:10px; }
+  .profile img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
 </style>
 </head>
-
 <body>
 
-<h1>Bienvenue sur Barou Tech 🚀</h1>
-<p>Le réseau social créé par Oumar</p>
+<h1>Mon Mini Réseau Social</h1>
 
-<button onclick="window.location.href='signup.html'">Créer un compte</button>
-<button onclick="window.location.href='login.html'">Se connecter</button>
+<div id="post-form">
+  <div class="profile">
+    <img src="https://i.pravatar.cc/40" alt="Profil">
+    <strong>Moi</strong>
+  </div>
+  <textarea id="post-text" placeholder="Quoi de neuf ?"></textarea>
+  <input type="file" id="post-image"><br>
+  <button id="submit-post">Publier</button>
+</div>
+
+<div id="feed">
+  <h2>Fil</h2>
+</div>
+
+<script>
+const postText = document.getElementById("post-text");
+const postImage = document.getElementById("post-image");
+const submitPostBtn = document.getElementById("submit-post");
+const feed = document.getElementById("feed");
+
+submitPostBtn.addEventListener("click", () => {
+  const text = postText.value;
+  const file = postImage.files[0];
+  if(!text && !file) return alert("Écris un message ou choisis une image !");
+
+  const div = document.createElement("div");
+  div.classList.add("post");
+  div.innerHTML = `
+    <div class="profile">
+      <img src="https://i.pravatar.cc/40" alt="Profil">
+      <strong>Moi</strong>
+    </div>
+  `;
+
+  if(text) div.innerHTML += `<p>${text}</p>`;
+
+  if(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      div.innerHTML += `<img src="${e.target.result}">`;
+      feed.prepend(div);
+    }
+    reader.readAsDataURL(file);
+  } else {
+    feed.prepend(div);
+  }
+
+  postText.value = "";
+  postImage.value = "";
+});
+</script>
+
 </body>
 </html>
