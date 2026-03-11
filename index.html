@@ -1,300 +1,163 @@
 <!DOCTYPE html>
-<html lang="fr">
-
+<html>
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Baroutech</title>
+<title>Mon Mini Réseau Social</title>
 
 <style>
-
 body{
-font-family:Arial;
+font-family: Arial;
 background:#f0f2f5;
 padding:20px;
 }
 
-h1{
-text-align:center;
-color:#1877f2;
-}
-
-.box{
-background:white;
-padding:15px;
-border-radius:8px;
-margin-bottom:20px;
-box-shadow:0 2px 4px rgba(0,0,0,0.2);
-}
-
-textarea,input,button{
+textarea{
 width:100%;
-padding:10px;
-margin:5px 0;
-border-radius:5px;
-border:1px solid #ccc;
-}
-
-button{
-background:#1877f2;
-color:white;
-border:none;
-cursor:pointer;
+height:60px;
 }
 
 .post{
 background:white;
-padding:15px;
+padding:10px;
+margin-top:15px;
 border-radius:8px;
-margin-bottom:15px;
-box-shadow:0 2px 4px rgba(0,0,0,0.2);
 }
 
-.post img{
+img{
 max-width:100%;
 margin-top:10px;
-border-radius:5px;
+border-radius:6px;
 }
 
-.profile{
-display:flex;
-align-items:center;
-margin-bottom:10px;
+button{
+margin-top:10px;
+padding:6px;
 }
-
-.profile img{
-width:40px;
-height:40px;
-border-radius:50%;
-margin-right:10px;
-object-fit:cover;
-}
-
-.comment{
-background:#f0f2f5;
-padding:8px;
-border-radius:5px;
-margin-top:5px;
-}
-
 </style>
 
 </head>
 
 <body>
 
-<h1>Baroutech</h1>
+<h2>Mon Mini Réseau Social</h2>
 
-<div class="box">
+<input type="file" id="profileInput">
+<br><br>
 
-<div class="profile">
+<textarea id="textInput" placeholder="Écris un message"></textarea>
 
-<img id="avatarPreview" src="https://i.pravatar.cc/40">
+<br><br>
 
-<strong>Moi</strong>
+<input type="file" id="imageInput">
 
-</div>
+<br><br>
 
-<input type="file" id="avatarInput">
+<button onclick="publish()">Publier</button>
 
-<textarea id="postText" placeholder="Quoi de neuf ?"></textarea>
-
-<input type="file" id="postImage">
-
-<button onclick="createPost()">Publier</button>
-
-</div>
+<hr>
 
 <div id="feed"></div>
 
 <script>
 
-let posts = JSON.parse(localStorage.getItem("posts")) || [];
-let avatar = localStorage.getItem("avatar") || "https://i.pravatar.cc/40";
+let profileImage = ""
+let posts = JSON.parse(localStorage.getItem("posts")) || []
 
-document.getElementById("avatarPreview").src = avatar;
+document.getElementById("profileInput").addEventListener("change",function(e){
 
-document.getElementById("avatarInput").addEventListener("change",function(){
+let reader = new FileReader()
 
-let file=this.files[0];
-
-let reader=new FileReader();
-
-reader.onload=function(e){
-
-avatar=e.target.result;
-
-localStorage.setItem("avatar",avatar);
-
-document.getElementById("avatarPreview").src=avatar;
-
+reader.onload=function(){
+profileImage = reader.result
 }
 
-reader.readAsDataURL(file);
+reader.readAsDataURL(e.target.files[0])
 
-});
+})
 
-function savePosts(){
+function publish(){
 
-localStorage.setItem("posts",JSON.stringify(posts));
+let text = document.getElementById("textInput").value
+let file = document.getElementById("imageInput").files[0]
 
+if(!text && !file){
+alert("Écris un message ou ajoute une image")
+return
 }
 
-function createPost(){
+let reader = new FileReader()
 
-let text=document.getElementById("postText").value;
+reader.onload=function(){
 
-let file=document.getElementById("postImage").files[0];
+let post = {
+text:text,
+image:file ? reader.result : "",
+profile:profileImage,
+likes:0
+}
 
-if(!text && !file) return;
+posts.unshift(post)
 
-let reader=new FileReader();
+localStorage.setItem("posts",JSON.stringify(posts))
+
+showPosts()
+
+}
 
 if(file){
-
-reader.onload=function(e){
-
-addPost(text,e.target.result);
-
-}
-
-reader.readAsDataURL(file);
-
+reader.readAsDataURL(file)
 }else{
+reader.onload()
+}
 
-addPost(text,null);
+document.getElementById("textInput").value=""
+document.getElementById("imageInput").value=""
 
 }
 
-document.getElementById("postText").value="";
-document.getElementById("postImage").value="";
+function like(i){
+
+posts[i].likes++
+
+localStorage.setItem("posts",JSON.stringify(posts))
+
+showPosts()
 
 }
 
-function addPost(text,image){
+function showPosts(){
 
-let post={
+let feed = document.getElementById("feed")
 
-id:Date.now(),
+feed.innerHTML=""
 
-text:text,
+posts.forEach((p,i)=>{
 
-image:image,
+let div = document.createElement("div")
 
-likes:0,
+div.className="post"
 
-comments:[]
+div.innerHTML = `
+${p.profile ? `<img src="${p.profile}" width="40" style="border-radius:50%">` : ""}
 
-};
+<p>${p.text}</p>
 
-posts.unshift(post);
+${p.image ? `<img src="${p.image}">` : ""}
 
-savePosts();
+<br>
 
-render();
+<button onclick="like(${i})">👍 Like (${p.likes})</button>
+`
 
-}
+feed.appendChild(div)
 
-function likePost(id){
-
-let post=posts.find(p=>p.id===id);
-
-post.likes++;
-
-savePosts();
-
-render();
+})
 
 }
 
-function deletePost(id){
-
-posts=posts.filter(p=>p.id!==id);
-
-savePosts();
-
-render();
-
-}
-
-function addComment(id){
-
-let input=document.getElementById("commentInput"+id);
-
-let text=input.value;
-
-if(!text) return;
-
-let post=posts.find(p=>p.id===id);
-
-post.comments.push(text);
-
-input.value="";
-
-savePosts();
-
-render();
-
-}
-
-function render(){
-
-let feed=document.getElementById("feed");
-
-feed.innerHTML="";
-
-posts.forEach(post=>{
-
-let div=document.createElement("div");
-
-div.className="post";
-
-div.innerHTML=`
-
-<div class="profile">
-
-<img src="${avatar}">
-
-<strong>Moi</strong>
-
-</div>
-
-<p>${post.text || ""}</p>
-
-${post.image ? `<img src="${post.image}">` : ""}
-
-<button onclick="likePost(${post.id})">Like (${post.likes})</button>
-
-<button onclick="deletePost(${post.id})">Supprimer</button>
-
-<div>
-
-<input id="commentInput${post.id}" placeholder="Commenter">
-
-<button onclick="addComment(${post.id})">Envoyer</button>
-
-</div>
-
-<div>
-
-${post.comments.map(c=>`<div class="comment">${c}</div>`).join("")}
-
-</div>
-
-`;
-
-feed.appendChild(div);
-
-});
-
-}
-
-render();
+showPosts()
 
 </script>
 
 </body>
-
 </html>
